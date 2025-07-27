@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { LambdaApiFunction } from '../src/api/rest/lambda';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class FirstCdkAppStack extends cdk.Stack {
@@ -17,11 +18,13 @@ export class FirstCdkAppStack extends cdk.Stack {
       description: 'The key for the object in the S3 bucket',
     });
 
+    const bucket = new cdk.aws_s3.Bucket(this, 'MyBucket', {
+      bucketName: bucketName.valueAsString,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Only for dev/test environments
+    });
+
     new LambdaApiFunction(this, 'create-basic-lambda', {
-      environment: {
-        BUCKET_NAME: bucketName.valueAsString,
-        BUCKET_KEY: bucketKey.valueAsString,
-      },
+      code: lambda.Code.fromBucket(bucket, bucketKey.valueAsString),
     });
   }
 }
